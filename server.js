@@ -31,7 +31,7 @@ function handleGetMovie(req, res) {
         .includes(req.query.country.toLowerCase()))
     }
     if(req.query.avg_vote){
-        result= result.filter(movie=>movie.avg_vote > req.query.avg_vote)
+        result= result.filter(movie=>movie.avg_vote >= req.query.avg_vote)
     }
        res.json(result)
      }
