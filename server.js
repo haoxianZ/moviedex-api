@@ -5,12 +5,12 @@ const helmet = require('helmet');
 const cors = require('cors');
 const app = express();
 const MOVIE = require('./movies.json')
-app.use(morgan('dev'))
+const morganSetting = process.env.NODE_ENV === 'production' ? 'tiny' : 'common'
+app.use(morgan(morganSetting));
 app.use(helmet());
 app.use(cors())
 
 app.use(function validateBearerToken(req, res, next) {
-       console.log('validate bearer token middleware')
        const lock = process.env.API_TOKEN;
        const key = req.get('Authorization').split(' ')[1];
        if(!key ||lock !== key){
@@ -19,6 +19,15 @@ app.use(function validateBearerToken(req, res, next) {
        // move to the next middleware
        next()
      });
+app.use((error, req, res, next) => {
+        let response
+        if (process.env.NODE_ENV === 'production') {
+          response = { error: { message: 'server error' }}
+        } else {
+          response = { error }
+        }
+        res.status(500).json(response)
+      });
 
 function handleGetMovie(req, res) {
     let result = MOVIE;
@@ -36,7 +45,7 @@ function handleGetMovie(req, res) {
        res.json(result)
      }
  app.get('/movies', handleGetMovie);
-const PORT = 8000
+const PORT = process.env.PORT || 8000
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`)
